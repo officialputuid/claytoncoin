@@ -5,7 +5,7 @@ const colors = require('colors');
 const { DateTime } = require('luxon');
 const { HttpsProxyAgent } = require('https-proxy-agent');
 
-const maxThreads = 10; // số luồng
+const maxThreads = 10; // number of threads
 
 class Clayton {
     constructor(accountIndex, proxy, initData) {
@@ -123,17 +123,17 @@ class Clayton {
                 if (completeResult.success) {
                     const rewardResult = await this.rewardPartnerTask(task.task_id);
                     if (rewardResult.success) {
-                        this.log(`Làm nhiệm vụ ${task.task_name} thành công`, 'success');
+                        this.log(`Successfully completed task ${task.task_name}`, 'success');
                     } else {
-                        this.log(`Không thể nhận phần thưởng cho nhiệm vụ ${task.task_name}: ${rewardResult.error || 'Lỗi không xác định'}`, 'error');
+                        this.log(`Unable to claim reward for task ${task.task_name}: ${rewardResult.error || 'Unknown error'}`, 'error');
                     }
                 } else {
-                    this.log(`Không thể hoàn thành nhiệm vụ ${task.task_name}: ${completeResult.error || 'Lỗi không xác định'}`, 'error');
+                    this.log(`Unable to complete task ${task.task_name}: ${completeResult.error || 'Unknown error'}`, 'error');
                 }
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
         } else {
-            this.log(`Không thể lấy danh sách nhiệm vụ đối tác: ${tasksResult.error || 'Lỗi không xác định'}`, 'error');
+            this.log(`Unable to retrieve partner task list: ${tasksResult.error || 'Unknown error'}`, 'error');
         }
     }
 
@@ -144,9 +144,9 @@ class Clayton {
             const claimResult = await this.makeRequest("https://tonclayton.fun/api/user/task-twitter-claim", 'post');
             
             if (claimResult.success && claimResult.data.message === "Task status updated") {
-                this.log("Làm nhiệm vụ Twitter thành công", 'success');
+                this.log("Successfully completed Twitter task", 'success');
             } else {
-                this.log("Không thể hoàn thành nhiệm vụ Twitter", 'error');
+                this.log("Unable to complete Twitter task", 'error');
             }
         }
     }
@@ -158,9 +158,9 @@ class Clayton {
             const claimResult = await this.makeRequest("https://tonclayton.fun/api/user/task-bot-claim", 'post');
             
             if (claimResult.success && claimResult.data.claimed) {
-                this.log(`Làm nhiệm vụ use bot thành công. Nhận được ${claimResult.data.claimed} CL`, 'success');
+                this.log(`Successfully completed use bot task. Received ${claimResult.data.claimed} CL`, 'success');
             } else {
-                this.log("Không thể hoàn thành nhiệm vụ use bot", 'error');
+                this.log("Unable to complete use bot task", 'error');
             }
         }
     }
@@ -178,12 +178,12 @@ class Clayton {
                     const claimResult = await this.makeRequest(`https://tonclayton.fun/api/user/daily-task/${task.id}/claim`, 'post');
                     
                     if (claimResult.success && claimResult.data.message === "Reward claimed successfully") {
-                        this.log(`Làm nhiệm vụ ${task.task_type} thành công | nhận ${claimResult.data.reward} CL`, 'success');
+                        this.log(`Successfully completed ${task.task_type} task | Received ${claimResult.data.reward} CL`, 'success');
                     } else {
-                        this.log(`Không thể nhận thưởng nhiệm vụ ${task.task_type}`, 'error');
+                        this.log(`Unable to claim reward for ${task.task_type} task`, 'error');
                     }
                 } else {
-                    this.log(`Nhiệm vụ lỗi ${task.task_type}: ${completeResult.error || 'Lỗi không xác định'}`, 'error');
+                    this.log(`Error with ${task.task_type} task: ${completeResult.error || 'Unknown error'}`, 'error');
                 }
                 
                 await new Promise(resolve => setTimeout(resolve, 1000));
@@ -195,13 +195,13 @@ class Clayton {
         while (true) {
             const loginResult = await this.login();
             if (!loginResult.success) {
-                this.log("Không kiểm tra được vé", 'error');
+                this.log("Unable to check the ticket", 'error');
                 return;
             }
     
             const tickets = loginResult.data.user.tickets;
             if (tickets <= 0) {
-                this.log("Không còn vé nữa. dừng chơi game.", 'info');
+                this.log("No more tickets left. Stopping the game.", 'info');
                 return;
             }
 
@@ -213,10 +213,10 @@ class Clayton {
                 startAttempts++;
                 const startGameResult = await this.makeRequest("https://tonclayton.fun/api/game/start-game", 'post');
                 if (startGameResult.success && startGameResult.data.message === "Game started successfully") {
-                    this.log("Trò chơi đã bắt đầu thành công", 'success');
+                    this.log("Game has started successfully", 'success');
                     gameStarted = true;
                 } else {
-                    this.log(`Không thể bắt đầu trò chơi (Lần thử ${startAttempts}/${maxStartAttempts})`, 'error');
+                    this.log(`Unable to start the game (Attempt ${startAttempts}/${maxStartAttempts})`, 'error');
                     if (startAttempts < maxStartAttempts) {
                         await new Promise(resolve => setTimeout(resolve, 5000));
                     }
@@ -224,7 +224,7 @@ class Clayton {
             }
 
             if (!gameStarted) {
-                this.log("Không thể bắt đầu trò chơi sau 3 lần thử. Dừng chơi game.", 'error');
+                this.log("Unable to start the game after 3 attempts. Stopping the game.", 'error');
                 return;
             }
     
@@ -239,16 +239,16 @@ class Clayton {
     
                 const saveGameResult = await this.makeRequest("https://tonclayton.fun/api/game/save-tile-game", 'post', { maxTile: milestone });
                 if (saveGameResult.success && saveGameResult.data.message === "MaxTile saved successfully") {
-                    this.log(`Đã đạt đến ô ${milestone}`, 'success');
+                    this.log(`Reached milestone ${milestone}`, 'success');
                 }
             }
     
             const endGameResult = await this.makeRequest("https://tonclayton.fun/api/game/over-game", 'post');
             if (endGameResult.success) {
                 const reward = endGameResult.data;
-                this.log(`Trò chơi đã kết thúc thành công. Nhận ${reward.earn} CL và ${reward.xp_earned} XP`, 'custom');
+                this.log(`Game has ended successfully. Earned ${reward.earn} CL and ${reward.xp_earned} XP`, 'custom');
             } else {
-                this.log(`Lỗi kết thúc trò chơi: ${endGameResult.error || 'Lỗi không xác định'}`, 'error');
+                this.log(`Error ending the game: ${endGameResult.error || 'Unknown error'}`, 'error');
             }
     
             await new Promise(resolve => setTimeout(resolve, 5000));
@@ -268,21 +268,21 @@ class Clayton {
 
         while (!loginSuccess && loginAttempts < 3) {
             loginAttempts++;
-            this.log(`Đăng nhập... (Lần thử ${loginAttempts})`, 'info');
+            this.log(`Logging in... (Attempt ${loginAttempts})`, 'info');
             loginResult = await this.login();
             if (loginResult.success) {
                 loginSuccess = true;
             } else {
-                this.log(`Đăng nhập thất bại: ${loginResult.error}`, 'error');
+                this.log(`Login failed: ${loginResult.error}`, 'error');
                 if (loginAttempts < 3) {
-                    this.log('Thử lại...', 'info');
+                    this.log('Retrying...', 'info');
                     await new Promise(resolve => setTimeout(resolve, 5000));
                 }
             }
         }
 
         if (!loginSuccess) {
-            this.log('Đăng nhập không thành công sau 3 lần thử. Bỏ qua tài khoản.', 'error');
+            this.log('Login unsuccessful after 3 attempts. Skipping account.', 'error');
             return;
         }
 
@@ -290,44 +290,44 @@ class Clayton {
         this.log(`CL: ${userInfo.tokens} CL | ${userInfo.daily_attempts} Ticket`, 'info');
 
         if (loginResult.data.dailyReward.can_claim_today) {
-            this.log('Yêu cầu phần thưởng hàng ngày...', 'info');
+            this.log('Claiming daily reward...', 'info');
             const claimResult = await this.dailyClaim();
             if (claimResult.success && claimResult.data.message === "daily reward claimed successfully") {
-                this.log('Phần thưởng hàng ngày đã được nhận thành công!', 'success');
+                this.log('Daily reward has been successfully claimed!', 'success');
             } else {
-                this.log(`Không thể nhận phần thưởng hàng ngày: ${claimResult.error || 'Lỗi không xác định'}`, 'error');
+                this.log(`Unable to claim daily reward: ${claimResult.error || 'Unknown error'}`, 'error');
             }
         }
 
         if (!userInfo.active_farm) {
-            this.log('Bắt đầu farm...', 'info');
+            this.log('Starting to farm...', 'info');
             const startResult = await this.startFarm();
             if (startResult.success) {
                 const finishTime = DateTime.fromISO(startResult.data.start_time).plus({ hours: 6 });
-                this.log(`Farm đang hoạt động. Thời gian hoàn thành: ${finishTime.toFormat('dd/MM/yyyy HH:mm:ss')}`, 'success');
+                this.log(`Farming in progress. Completion time: ${finishTime.toFormat('dd/MM/yyyy HH:mm:ss')}`, 'success');
             } else {
-                this.log(`Không thể bắt đầu farm: ${startResult.error || 'Lỗi không xác định'}`, 'error');
+                this.log(`Unable to start farming: ${startResult.error || 'Unknown error'}`, 'error');
             }
         } else {
             if (!userInfo.can_claim) {
                 const finishTime = DateTime.fromISO(userInfo.start_time).plus({ hours: 6 });
-                this.log(`Farm đang hoạt động. Thời gian hoàn thành: ${finishTime.toFormat('dd/MM/yyyy HH:mm:ss')}`, 'info');
+                this.log(`Farming in progress. Completion time: ${finishTime.toFormat('dd/MM/yyyy HH:mm:ss')}`, 'info');
             } else {
-                this.log('Đang nhận phần thưởng farm...', 'info');
+                this.log('Claiming farm rewards...', 'info');
                 const claimResult = await this.claimFarm();
                 if (claimResult.success) {
-                    this.log(`Claim thành công. Nhận ${claimResult.data.claim} CL và ${claimResult.data.xp_earned} XP | Balance: ${claimResult.data.tokens}`, 'success');
+                    this.log(`Claim successful. Received ${claimResult.data.claim} CL and ${claimResult.data.xp_earned} XP | Balance: ${claimResult.data.tokens}`, 'success');
                     
-                    this.log('Đang bắt đầu farm mới...', 'info');
+                    this.log('Starting a new farm...', 'info');
                     const startResult = await this.startFarm();
                     if (startResult.success) {
                         const finishTime = DateTime.fromISO(startResult.data.start_time).plus({ hours: 6 });
-                        this.log(`Farm mới bắt đầu. Thời gian hoàn thành: ${finishTime.toFormat('dd/MM/yyyy HH:mm:ss')}`, 'success');
+                        this.log(`New farm started. Completion time: ${finishTime.toFormat('dd/MM/yyyy HH:mm:ss')}`, 'success');
                     } else {
-                        this.log(`Không thể bắt đầu farm mới: ${startResult.error || 'Lỗi không xác định'}`, 'error');
+                        this.log(`Unable to start new farm: ${startResult.error || 'Unknown error'}`, 'error');
                     }
                 } else {
-                    this.log(`Không thể nhận phần thưởng farm: ${claimResult.error || 'Lỗi không xác định'}`, 'error');
+                    this.log(`Unable to claim farm reward: ${claimResult.error || 'Unknown error'}`, 'error');
                 }
             }
         }
@@ -340,12 +340,18 @@ class Clayton {
         if (userInfo.daily_attempts > 0) {
             await this.playGame();
         } else {
-            this.log(`Không còn vé trò chơi`, 'success');
+            this.log(`No more game tickets`, 'success');
         }
     }
 }
 
 async function main() {
+    const xTitle = "\n\x1b[1mclaytoncoin\x1b[0m";
+    const additionalText = "\nIf you use it, don't be afraid.\nIf you're afraid, don't use it.\nDo With Your Own Risk!\n";
+
+    console.log(xTitle.green);
+    console.log(additionalText.yellow);
+
     const dataFile = path.join(__dirname, 'data.txt');
     const data = fs.readFileSync(dataFile, 'utf8')
         .replace(/\r/g, '')
@@ -367,14 +373,14 @@ async function main() {
                 const proxy = proxies[accountIndex % proxies.length];
                 const client = new Clayton(accountIndex, proxy, initData);
                 return timeout(client.processAccount(), 10 * 60 * 1000).catch(err => {
-                    client.log(`Lỗi xử lý tài khoản: ${err.message}`, 'error');
+                    client.log(`Account processing error: ${err.message}`, 'error');
                 });
             });
 
             await Promise.allSettled(promises);
             await new Promise(resolve => setTimeout(resolve, 5000));
         }
-        console.log(`Hoàn thành tất cả tài khoản, chờ 6 giờ để tiếp tục`);
+        console.log(`Completed all accounts, waiting 6 hours to continue`);
         await new Promise(resolve => setTimeout(resolve, 21900 * 1000));
     }
 }
